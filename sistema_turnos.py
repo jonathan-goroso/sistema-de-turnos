@@ -13,14 +13,25 @@ def menu_principal() -> None:
     print("0-salir")
     print(" ")
 
-    
+
 def configurar_horarios() -> list[int]:
     """
     modifica el margen de horarios del sistema
 
     post:el nuevo margen es guardado en el sistema
     """
-    print("esta funcion configura el margen de horarios disponible")
+
+    comienzo = int(input("ingrese a que hora empieza a atender: "))
+    fin = int(input("ingrese hasta que hora antiende: "))
+
+    horarios = []
+    for i in range(comienzo, fin):
+        horarios.append(str(i) + ":00")
+        horarios.append(str(i) + ":30")
+
+    horarios.append(str(fin) + ":00")
+
+    return horarios
 
 
 def main():
@@ -42,6 +53,7 @@ def main():
                 gestionar_turnos(turnos, pacientes, horarios)
             case "3":
                 horarios = configurar_horarios()
+                print(horarios)
             case "0":
                 break
             case _:
