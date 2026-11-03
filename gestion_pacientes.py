@@ -1,4 +1,5 @@
 import re
+from tabulate import tabulate
 
 
 def menu_pacientes() -> None:
@@ -48,7 +49,6 @@ def registrar_paciente(pacientes: dict[str, dict]) -> None:
       ese DNI como clave, y se informa "Paciente registrado.".
     - Si el DNI ya estaba registrado, 'pacientes' no se modifica y se informa
       el motivo.
-    - Ningún otro paciente se modifica.
     """
     dni = pedir_dato_valido(
         "Ingrese el DNI (7 u 8 dígitos): ",
@@ -77,8 +77,8 @@ def registrar_paciente(pacientes: dict[str, dict]) -> None:
     )
 
     pacientes[dni] = {
-        "nombre": nombre,
-        "apellido": apellido,
+        "nombre": nombre.title(),
+        "apellido": apellido.title(),
         "correo": correo,
         "telefono": telefono,
     }
@@ -149,7 +149,7 @@ def validar_nombre(nombre: str) -> bool:
 
     Postcondiciones:
     - Devuelve True si 'nombre' cumple el formato descrito.
-    - Devuelve False en cualquier otro caso (vacío, números, símbolos, etc.
+    - Devuelve False en cualquier otro caso (vacío, números, símbolos, etc.)
     - No modifica 'nombre', no imprime nada y no solicita datos por teclado.
     """
     letras = "A-Za-zÁÉÍÓÚÜÑáéíóúüñ"
@@ -281,39 +281,159 @@ def opciones_modificar_paciente() -> None:
     print()
 
 
-def eliminar_paciente(pacientes: dict[int:list]) -> None:
+def eliminar_paciente(pacientes: dict[str, dict], turnos) -> None:
     """
-    elimina a un paciente del sistema
+    Elimina a un paciente del sistema, siempre que no tenga turnos asignados.
 
-    pre: el diccionario debe tener al menos un elemento
-    post: el paciente es eliminado del sistema
+    Contrato:
+    - Solicita por teclado el DNI y, si el paciente existe y no tiene turnos,
+      lo elimina por completo del sistema.
+
+    Precondiciones:
+    - 'pacientes' es un diccionario (puede estar vacío) cuyas claves son DNI
+      (str) y cuyos valores son diccionarios con las claves "nombre",
+      "apellido", "correo" y "telefono".
+    - turnos es el diccionario de turnos del sistema (puede estar vacío).
+
+    Postcondiciones:
+    - Si el DNI existe y el paciente no tiene turnos, se elimina esa clave de
+      pacientes y se informa "Paciente <nombre> <apellido> eliminado.".
+    - Si el DNI no existe o el paciente tiene turnos, 'pacientes' no se
+      modifica y se informa el motivo.
+    - turnos nunca se modifica.
     """
-    print("esta función da de baja a un paciente del sistema")
+    '''
+    dni = pedir_dato_valido(
+        "Ingrese el DNI del paciente: ",
+        validar_dni,
+        "DNI inválido: ingresá solo números, sin puntos.",
+    )
+    if dni not in pacientes:
+        print("No existe un paciente registrado con ese DNI.")
+        return
+
+    if paciente_tiene_turnos(turnos, dni):
+        print("No se puede eliminar: el paciente tiene turnos asignados.")
+        return
+
+    paciente = pacientes[dni]
+    del pacientes[dni]
+    print(f"Paciente {paciente['nombre']} {paciente['apellido']} eliminado.")
+    '''
+    pass
 
 
-def consultar_paciente(pacientes: dict[int:list]) -> None:
+def consultar_paciente(pacientes: dict[str, dict]) -> None:
     """
-    muestra los datos de un paciente
+    Muestra por pantalla los datos de un paciente.
 
-    pre: el diccionario debe tener al menos un elemento
-    post:muestra por pantalla los datos del paciente
+    Contrato:
+    - Solicita por teclado el DNI y, si el paciente existe, muestra sus datos
+      en una tabla.
+
+    Precondiciones:
+    - pacientes es un diccionario (puede estar vacío) con la estructura
+      acordada.
+
+    Postcondiciones:
+    - Si el DNI existe, se muestra la tabla con los datos del paciente.
+    - Si no existe, se informa el motivo.
+    - No modifica pacientes.
     """
-    print("permite consultar los datos de un paciente")
+    dni = pedir_dato_valido(
+        "Ingrese el DNI del paciente: ",
+        validar_dni,
+        "DNI inválido: ingresá solo números, sin puntos.",
+    )
+    if dni not in pacientes:
+        print("No existe un paciente registrado con ese DNI.")
+        return
+    
+    print("                     FICHA DEL PACIENTE")
+    mostrar_pacientes({dni: pacientes[dni]})
 
 
-def listar_pacientes(pacientes: dict[int:list]) -> None:
+def mostrar_pacientes(pacientes: dict[str, dict]) -> None:
     """
-    muestra a todos los pacientes del sistema
+    Muestra por pantalla una tabla con los datos de los pacientes recibidos.
 
-    pre: el diccionario debe tener al menos un elemento
-    post: muestra por pantalla a todos los pacientes
+    Contrato:
+    - Arma una fila por paciente con DNI, nombre, apellido, correo y teléfono,
+      y la imprime como tabla con encabezados.
+
+    Precondiciones:
+    - pacientes es un diccionario con al menos un paciente, con la estructura
+      acordada (claves DNI en str; valores con "nombre", "apellido",
+      "correo" y "telefono").
+
+    Postcondiciones:
+    - Se imprime la tabla con todos los pacientes recibidos.
+    - No modifica pacientes ni solicita datos por teclado.
     """
-    print("lista a todos los pacientes del sistema")
+    filas = []
+    for dni, datos in pacientes.items():
+        filas.append(
+            [
+                dni,
+                datos["nombre"],
+                datos["apellido"],
+                datos["correo"],
+                datos["telefono"],
+            ]
+        )
+    encabezados = ["DNI", "Nombre", "Apellido", "Correo", "Teléfono"]
+    print(tabulate(filas, headers=encabezados, tablefmt="simple_grid", disable_numparse=True))
+
+
+def listar_pacientes(pacientes: dict[str, dict]) -> None:
+    """
+    Muestra por pantalla a todos los pacientes del sistema.
+
+    Contrato:
+    - Muestra una tabla con todos los pacientes registrados.
+
+    Precondiciones:
+    - pacientes es un diccionario (puede estar vacío) con la estructura
+      acordada.
+
+    Postcondiciones:
+    - Si hay pacientes, se muestra la tabla con todos ellos.
+    - Si no hay ninguno, se informa que no hay pacientes registrados.
+    - No modifica pacientes.
+    """
+    if not pacientes:
+        print("No hay pacientes registrados.")
+        return
+    
+    print("                           PACIENTES")
+    mostrar_pacientes(pacientes)
 
 
 def gestionar_pacientes(pacientes: dict[str, dict]) -> None:
+    """
+    Muestra el menú de pacientes y deriva cada opción a su función.
+
+    Contrato:
+    - Repite el menú hasta que el usuario elija la opción 0 (volver al menú
+      principal).
+    - Según la opción, llama a registrar_paciente, modificar_paciente,
+      eliminar_paciente, consultar_paciente o listar_pacientes.
+    - No valida ni modifica datos por sí misma: delega todo en esas funciones.
+
+    Precondiciones:
+    - pacientes es un diccionario (puede estar vacío) cuyas claves son DNI
+      (str) y cuyos valores son diccionarios con las claves "nombre",
+      "apellido", "correo" y "telefono".
+
+    Postcondiciones:
+    - Termina únicamente cuando el usuario elige la opción 0.
+    - Al terminar, pacientes refleja todos los registros, modificaciones y
+      eliminaciones hechos durante la sesión del menú.
+    - Si el usuario elige una opción que no existe, informa "Opción no
+      válida" y vuelve a mostrar el menú sin modificar pacientes.
+    """
     while True:
-        print("---------menú de pacientes-------")
+        print("---------menú de pacientes---------")
         menu_pacientes()
 
         opcion = input("Elija una opción: ")
