@@ -1,8 +1,24 @@
+from persistencia import guardar_datos
 import re
 from tabulate import tabulate
 
 
 def menu_pacientes() -> None:
+    """
+    Muestra por pantalla las opciones disponibles del menú de pacientes.
+
+    Contrato:
+    - Imprime en consola la lista numerada de opciones del menú (del 1 al 5
+      y la opción 0 para volver) seguida de una línea en blanco.
+
+    Precondiciones:
+    - Ninguna. No recibe parámetros.
+
+    Postcondiciones:
+    - Imprime las opciones en pantalla y una línea vacía al final.
+    - No solicita datos por teclado, no retorna ningún valor y no modifica
+      el estado del sistema.
+    """
     ops = {
         "1": "Registrar paciente",
         "2": "Modificar paciente",
@@ -28,7 +44,7 @@ pacientes = {
 """
 
 
-def registrar_paciente(pacientes: dict[str, dict]) -> None:
+def registrar_paciente(pacientes: dict[str, dict]) -> bool:
     """
     Registra un nuevo paciente en el sistema.
 
@@ -37,7 +53,6 @@ def registrar_paciente(pacientes: dict[str, dict]) -> None:
     - Si no lo está, solicita nombre, apellido, correo y teléfono, volviendo
       a pedir cada dato hasta que sea válido.
     - Agrega al paciente usando el DNI como clave.
-    - Solo modifica el diccionario en memoria: no guarda en ningún archivo.
 
     Precondiciones:
     - pacientes es un diccionario (puede estar vacío) cuyas claves son DNI
@@ -46,9 +61,9 @@ def registrar_paciente(pacientes: dict[str, dict]) -> None:
 
     Postcondiciones:
     - Si el DNI no estaba registrado, 'pacientes' tiene un paciente más, con
-      ese DNI como clave, y se informa "Paciente registrado.".
+      ese DNI como clave, y se informa "Paciente registrado." y devuelve True.
     - Si el DNI ya estaba registrado, 'pacientes' no se modifica y se informa
-      el motivo.
+      el motivo y devuelve False.
     """
     dni = pedir_dato_valido(
         "Ingrese el DNI (7 u 8 dígitos): ",
@@ -57,7 +72,7 @@ def registrar_paciente(pacientes: dict[str, dict]) -> None:
     )
     if dni in pacientes:
         print("Ya existe un paciente registrado con ese DNI.")
-        return
+        return False
 
     nombre = pedir_dato_valido(
         "Ingrese el nombre: ", validar_nombre, "Nombre inválido: usá solo letras."
@@ -84,6 +99,7 @@ def registrar_paciente(pacientes: dict[str, dict]) -> None:
     }
 
     print("Paciente registrado.")
+    return True
 
 
 def pedir_dato_valido(mensaje: str, funcion_validadora, mensaje_error: str) -> str:
@@ -100,7 +116,7 @@ def pedir_dato_valido(mensaje: str, funcion_validadora, mensaje_error: str) -> s
     Precondiciones:
     - mensaje y mensaje_error son str.
     - funcion_validadora es una función que recibe un str y devuelve un bool
-      (por ejemplo, validar_dni).
+      por ejemplo ("12345678", validar_dni).
 
     Postcondiciones:
     - Devuelve un str que cumple funcion_validadora, con los espacios
@@ -123,7 +139,7 @@ def validar_dni(dni: str) -> bool:
     - Valida solo el formato; no verifica que el DNI exista realmente ni contempla documentos antiguos con letra (F/M)
 
     Precondiciones:
-    - 'dni' debe ser una cadena de texto.
+    - 'dni' debe ser un string.
 
     Postcondiciones:
     - Devuelve True si dni tiene 7 u 8 dígitos.
@@ -145,7 +161,7 @@ def validar_nombre(nombre: str) -> bool:
     - Solo contempla letras del alfabeto latino del español; no admite otros alfabetos.
 
     Precondiciones:
-    - 'nombre' debe ser una cadena de texto.
+    - 'nombre' debe ser un string.
 
     Postcondiciones:
     - Devuelve True si 'nombre' cumple el formato descrito.
@@ -166,10 +182,10 @@ def validar_correo(correo: str) -> bool:
     - Valida solo el formato; no verifica que la casilla exista ni cubre todos los casos raros que admite el estándar de correo.
 
     Precondiciones:
-    - 'correo' debe ser una cadena de texto.
+    - 'correo' debe ser string.
 
     Postcondiciones:
-    - Devuelve True si correo tiene un usuario, una arroba, un dominio y una
+    - Devuelve True si 'correo' tiene un usuario, una arroba, un dominio y una
       extensión de al menos 2 letras.
     - Devuelve False en cualquier otro caso (vacío, sin arroba, con espacios,
       sin extensión, con puntos consecutivos en el dominio).
@@ -190,7 +206,7 @@ def validar_telefono(telefono: str) -> bool:
       no admite espacios ni guiones.
 
     Precondiciones:
-    - 'telefono' debe ser una cadena de texto.
+    - 'telefono' debe ser un string.
 
     Postcondiciones:
     - Devuelve True si 'telefono' son 10 dígitos (0-9) y el primero no es 0.
@@ -202,7 +218,7 @@ def validar_telefono(telefono: str) -> bool:
     return bool(re.fullmatch(patron_telefono, telefono))
 
 
-def modificar_paciente(pacientes: dict[str, dict]) -> None:
+def modificar_paciente(pacientes: dict[str, dict]) -> bool:
     """
     Modifica un dato (nombre, apellido, correo o teléfono) de un paciente.
 
@@ -210,7 +226,6 @@ def modificar_paciente(pacientes: dict[str, dict]) -> None:
     - Solicita por teclado el DNI y, si el paciente existe, qué dato modificar
       y su nuevo valor, que se vuelve a pedir hasta que sea válido.
     - El DNI no se puede modificar porque es la clave del paciente.
-    - Solo modifica el diccionario en memoria: no guarda en ningún archivo.
 
     Precondiciones:
     - pacientes es un diccionario (puede estar vacío) cuyas claves son DNI
@@ -219,9 +234,9 @@ def modificar_paciente(pacientes: dict[str, dict]) -> None:
 
     Postcondiciones:
     - Si el DNI existe y la opción elegida es válida, se actualiza ese único
-      dato del paciente y se informa "Paciente modificado.".
+      dato del paciente y se informa "Paciente modificado." y devuelve True.
     - Si el DNI no existe o la opción es inválida, pacientes no se modifica
-      y se informa el motivo.
+      y se informa el motivo y devuelve False.
     - Ningún otro paciente ni otro dato se modifica.
     """
     dni = pedir_dato_valido(
@@ -231,7 +246,7 @@ def modificar_paciente(pacientes: dict[str, dict]) -> None:
     )
     if dni not in pacientes:
         print("No existe un paciente registrado con ese DNI.")
-        return
+        return False
 
     print("------Dato a modificar------")
     opciones_modificar_paciente()
@@ -244,14 +259,14 @@ def modificar_paciente(pacientes: dict[str, dict]) -> None:
                 "Ingrese el nuevo nombre: ",
                 validar_nombre,
                 "Nombre inválido: usá solo letras.",
-            )
+            ).title()
         case "2":
             campo = "apellido"
             nuevo_valor = pedir_dato_valido(
                 "Ingrese el nuevo apellido: ",
                 validar_nombre,
                 "Apellido inválido: usá solo letras.",
-            )
+            ).title()
         case "3":
             campo = "correo"
             nuevo_valor = pedir_dato_valido(
@@ -268,20 +283,36 @@ def modificar_paciente(pacientes: dict[str, dict]) -> None:
             )
         case _:
             print("Opción no válida")
-            return
+            return False
 
     pacientes[dni][campo] = nuevo_valor
     print("Paciente modificado.")
+    return True
 
 
 def opciones_modificar_paciente() -> None:
+    """
+    Muestra por pantalla los campos de un paciente que pueden modificarse.
+
+    Contrato:
+    - Imprime en consola las opciones numeradas correspondientes a los campos
+      modificables de un paciente (Nombre, Apellido, Correo y Teléfono).
+
+    Precondiciones:
+    - Ninguna. No recibe parámetros.
+
+    Postcondiciones:
+    - Imprime las opciones de modificación en pantalla y una línea vacía al final.
+    - No solicita datos por teclado, no retorna ningún valor y no modifica
+      el estado del sistema.
+    """
     ops = {"1": "Nombre", "2": "Apellido", "3": "Correo", "4": "Teléfono"}
     for indice, elemento in ops.items():
         print(f"{indice}-{elemento}")
     print()
 
 
-def eliminar_paciente(pacientes: dict[str, dict], turnos) -> None:
+def eliminar_paciente(pacientes: dict[str, dict]) -> bool:
     """
     Elimina a un paciente del sistema, siempre que no tenga turnos asignados.
 
@@ -297,12 +328,12 @@ def eliminar_paciente(pacientes: dict[str, dict], turnos) -> None:
 
     Postcondiciones:
     - Si el DNI existe y el paciente no tiene turnos, se elimina esa clave de
-      pacientes y se informa "Paciente <nombre> <apellido> eliminado.".
+      pacientes y se informa "Paciente <nombre> <apellido> eliminado." y devuelve True.
     - Si el DNI no existe o el paciente tiene turnos, 'pacientes' no se
-      modifica y se informa el motivo.
+      modifica y se informa el motivo y devuelve False.
     - turnos nunca se modifica.
     """
-    '''
+    """
     dni = pedir_dato_valido(
         "Ingrese el DNI del paciente: ",
         validar_dni,
@@ -310,17 +341,18 @@ def eliminar_paciente(pacientes: dict[str, dict], turnos) -> None:
     )
     if dni not in pacientes:
         print("No existe un paciente registrado con ese DNI.")
-        return
+        return False
 
     if paciente_tiene_turnos(turnos, dni):
         print("No se puede eliminar: el paciente tiene turnos asignados.")
-        return
+        return False
 
     paciente = pacientes[dni]
     del pacientes[dni]
     print(f"Paciente {paciente['nombre']} {paciente['apellido']} eliminado.")
-    '''
-    pass
+    return True
+    """
+    print("falta terminar")
 
 
 def consultar_paciente(pacientes: dict[str, dict]) -> None:
@@ -348,7 +380,7 @@ def consultar_paciente(pacientes: dict[str, dict]) -> None:
     if dni not in pacientes:
         print("No existe un paciente registrado con ese DNI.")
         return
-    
+
     print("                     FICHA DEL PACIENTE")
     mostrar_pacientes({dni: pacientes[dni]})
 
@@ -382,7 +414,11 @@ def mostrar_pacientes(pacientes: dict[str, dict]) -> None:
             ]
         )
     encabezados = ["DNI", "Nombre", "Apellido", "Correo", "Teléfono"]
-    print(tabulate(filas, headers=encabezados, tablefmt="simple_grid", disable_numparse=True))
+    print(
+        tabulate(
+            filas, headers=encabezados, tablefmt="simple_grid", disable_numparse=True
+        )
+    )
 
 
 def listar_pacientes(pacientes: dict[str, dict]) -> None:
@@ -404,7 +440,7 @@ def listar_pacientes(pacientes: dict[str, dict]) -> None:
     if not pacientes:
         print("No hay pacientes registrados.")
         return
-    
+
     print("                           PACIENTES")
     mostrar_pacientes(pacientes)
 
@@ -419,6 +455,7 @@ def gestionar_pacientes(pacientes: dict[str, dict]) -> None:
     - Según la opción, llama a registrar_paciente, modificar_paciente,
       eliminar_paciente, consultar_paciente o listar_pacientes.
     - No valida ni modifica datos por sí misma: delega todo en esas funciones.
+    - Si alguna de las opciones que modifican datos (1, 2 o 3) se completó con éxito, guarda pacientes en pacientes.json mediante guardar_datos.
 
     Precondiciones:
     - pacientes es un diccionario (puede estar vacío) cuyas claves son DNI
@@ -427,8 +464,8 @@ def gestionar_pacientes(pacientes: dict[str, dict]) -> None:
 
     Postcondiciones:
     - Termina únicamente cuando el usuario elige la opción 0.
-    - Al terminar, pacientes refleja todos los registros, modificaciones y
-      eliminaciones hechos durante la sesión del menú.
+    - Al terminar, pacientes.json contiene los pacientes tal como quedaron
+      después de la última modificación.
     - Si el usuario elige una opción que no existe, informa "Opción no
       válida" y vuelve a mostrar el menú sin modificar pacientes.
     """
@@ -439,17 +476,20 @@ def gestionar_pacientes(pacientes: dict[str, dict]) -> None:
         opcion = input("Elija una opción: ")
 
         match opcion:
+            case "0":
+                break
             case "1":
-                registrar_paciente(pacientes)
+                if registrar_paciente(pacientes):
+                    guardar_datos("pacientes.json", pacientes)
             case "2":
-                modificar_paciente(pacientes)
+                if modificar_paciente(pacientes):
+                    guardar_datos("pacientes.json", pacientes)
             case "3":
-                eliminar_paciente(pacientes)
+                if eliminar_paciente(pacientes):
+                    guardar_datos("pacientes.json", pacientes)
             case "4":
                 consultar_paciente(pacientes)
             case "5":
                 listar_pacientes(pacientes)
-            case "0":
-                break
             case _:
                 print("Opción no válida")
