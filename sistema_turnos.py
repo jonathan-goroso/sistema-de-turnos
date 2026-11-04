@@ -113,7 +113,7 @@ def main() -> None:
                 gestionar_pacientes(pacientes, ARCHIVO_PACIENTES)
                 print()
             case "2":
-                gestionar_turnos(turnos, pacientes, horarios)
+                gestionar_turnos(turnos, pacientes, horarios, ARCHIVO_TURNOS)
                 print()
             case "3":
                 horarios = configurar_horarios()
