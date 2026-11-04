@@ -3,7 +3,7 @@ import re
 from tabulate import tabulate
 
 
-def menu_pacientes() -> None:
+def mostrar_menu_pacientes() -> None:
     """
     Muestra por pantalla las opciones disponibles del menú de pacientes.
 
@@ -27,21 +27,9 @@ def menu_pacientes() -> None:
         "5": "Listar pacientes",
         "0": "Volver al menú principal",
     }
-    for indice, elemento in ops.items():
-        print(f"{indice}-{elemento}")
+    for clave, valor in ops.items():
+        print(f"{clave}-{valor}")
     print()
-
-
-"""
-pacientes = {
-    "12345678": {
-        "nombre": "Juan", 
-        "apellido": "Pérez", 
-        "correo": "juan27@gmail.com", 
-        "telefono": "2267444854"
-    }
-}
-"""
 
 
 def registrar_paciente(pacientes: dict[str, dict]) -> bool:
@@ -307,8 +295,8 @@ def opciones_modificar_paciente() -> None:
       el estado del sistema.
     """
     ops = {"1": "Nombre", "2": "Apellido", "3": "Correo", "4": "Teléfono"}
-    for indice, elemento in ops.items():
-        print(f"{indice}-{elemento}")
+    for clave, valor in ops.items():
+        print(f"{clave}-{valor}")
     print()
 
 
@@ -445,7 +433,7 @@ def listar_pacientes(pacientes: dict[str, dict]) -> None:
     mostrar_pacientes(pacientes)
 
 
-def gestionar_pacientes(pacientes: dict[str, dict]) -> None:
+def gestionar_pacientes(pacientes: dict[str, dict], archivo: str) -> None:
     """
     Muestra el menú de pacientes y deriva cada opción a su función.
 
@@ -470,8 +458,8 @@ def gestionar_pacientes(pacientes: dict[str, dict]) -> None:
       válida" y vuelve a mostrar el menú sin modificar pacientes.
     """
     while True:
-        print("---------menú de pacientes---------")
-        menu_pacientes()
+        print("---------menú pacientes---------")
+        mostrar_menu_pacientes()
 
         opcion = input("Elija una opción: ")
 
@@ -480,13 +468,13 @@ def gestionar_pacientes(pacientes: dict[str, dict]) -> None:
                 break
             case "1":
                 if registrar_paciente(pacientes):
-                    guardar_datos("pacientes.json", pacientes)
+                    guardar_datos(archivo, pacientes)
             case "2":
                 if modificar_paciente(pacientes):
-                    guardar_datos("pacientes.json", pacientes)
+                    guardar_datos(archivo, pacientes)
             case "3":
                 if eliminar_paciente(pacientes):
-                    guardar_datos("pacientes.json", pacientes)
+                    guardar_datos(archivo, pacientes)
             case "4":
                 consultar_paciente(pacientes)
             case "5":

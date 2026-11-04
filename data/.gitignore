@@ -1,0 +1,4 @@
+# Ignorar todos los archivos que se guarden en data/
+*
+# Excepto este mismo archivo para que Git conserve la carpeta
+!.gitignore
