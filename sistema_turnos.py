@@ -23,7 +23,7 @@ def mostrar_menu_principal() -> None:
     - No solicita datos por teclado, no retorna ningún valor y no modifica
       el estado del sistema.
     """
-    print("-----menú principal-----") 
+    print("---- Menú principal ----") 
     opciones = {
         "1": "Gestionar pacientes",
         "2": "Gestionar turnos",
@@ -31,7 +31,7 @@ def mostrar_menu_principal() -> None:
         "0": "Salir del programa",
     }
     for clave, valor in opciones.items():
-        print(f"{clave}-{valor}")
+        print(f"{clave}- {valor}")
     print()
 
 
@@ -111,7 +111,7 @@ def main() -> None:
                 print("Gracias.")
                 break
             case _:
-                print("opción no válida")
+                print("Opción no válida.")
 
 
 if __name__ == "__main__":
