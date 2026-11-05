@@ -23,11 +23,11 @@ def mostrar_menu_principal() -> None:
     - No solicita datos por teclado, no retorna ningún valor y no modifica
       el estado del sistema.
     """
+    print("-----menú principal-----") 
     opciones = {
         "1": "Gestionar pacientes",
         "2": "Gestionar turnos",
         "3": "Gestionar horarios",
-        "4": "Consultas",
         "0": "Salir del programa",
     }
     for clave, valor in opciones.items():
@@ -89,28 +89,16 @@ def main() -> None:
     """
     horarios = ["9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00"]
     pacientes = leer_datos(ARCHIVO_PACIENTES)
-    """
-    ejemplo de como seria:
-    pacientes = {
-        "dni": {
-            "nombre": "juan",
-            "apellido": "Pérez",
-            "correo": "juan@gmail.com",
-            "telefono": "1155558428",
-        }
-    }
-    """
     turnos = leer_datos(ARCHIVO_TURNOS)
     # ejemplo de como seria: turnos ={id:[dni,fecha,"hora"]}
 
     while True:
-        print("-----menu principal-----")
         mostrar_menu_principal()
         opcion = input("Elija una opción: ")
 
         match opcion:
             case "1":
-                gestionar_pacientes(pacientes, ARCHIVO_PACIENTES)
+                gestionar_pacientes(pacientes, turnos, ARCHIVO_PACIENTES)
                 print()
             case "2":
                 gestionar_turnos(turnos, pacientes, horarios, ARCHIVO_TURNOS)
@@ -120,6 +108,7 @@ def main() -> None:
                 print(horarios)
                 print()
             case "0":
+                print("Gracias.")
                 break
             case _:
                 print("opción no válida")
