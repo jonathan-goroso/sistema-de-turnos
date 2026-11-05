@@ -1,6 +1,12 @@
-from persistencia import guardar_datos
-import re
 from tabulate import tabulate
+from persistencia import guardar_datos
+from validaciones import (
+    pedir_dato_valido,
+    validar_dni,
+    validar_nombre,
+    validar_correo,
+    validar_telefono,
+)
 
 
 def mostrar_menu_pacientes() -> None:
@@ -19,6 +25,7 @@ def mostrar_menu_pacientes() -> None:
     - No solicita datos por teclado, no retorna ningún valor y no modifica
       el estado del sistema.
     """
+    print("---------menú pacientes---------") 
     ops = {
         "1": "Registrar paciente",
         "2": "Modificar paciente",
@@ -88,122 +95,6 @@ def registrar_paciente(pacientes: dict[str, dict]) -> bool:
 
     print("Paciente registrado.")
     return True
-
-
-def pedir_dato_valido(mensaje: str, funcion_validadora, mensaje_error: str) -> str:
-    """
-    Solicita un dato por teclado hasta que el usuario ingrese uno válido.
-
-    Contrato:
-    - Muestra mensaje, lee lo que escribe el usuario y normaliza los espacios:
-      quita los de los extremos y reduce los repetidos a uno solo.
-    - Si el dato normalizado no cumple funcion_validadora, muestra
-      mensaje_error y vuelve a pedirlo.
-    - No tiene forma de cancelar: sigue pidiendo hasta recibir un dato válido.
-
-    Precondiciones:
-    - mensaje y mensaje_error son str.
-    - funcion_validadora es una función que recibe un str y devuelve un bool
-      por ejemplo ("12345678", validar_dni).
-
-    Postcondiciones:
-    - Devuelve un str que cumple funcion_validadora, con los espacios
-      normalizados.
-    - Imprime mensaje_error una vez por cada intento inválido.
-    """
-    while True:
-        dato = " ".join(input(mensaje).split())
-        if funcion_validadora(dato):
-            return dato
-        print(mensaje_error)
-
-
-def validar_dni(dni: str) -> bool:
-    """
-    Indica si 'dni' tiene el formato de un DNI argentino.
-
-    Contrato:
-    - Comprueba que 'dni' esté formado únicamente por 7 u 8 dígitos, y que el primer dígito no sea un 0.
-    - Valida solo el formato; no verifica que el DNI exista realmente ni contempla documentos antiguos con letra (F/M)
-
-    Precondiciones:
-    - 'dni' debe ser un string.
-
-    Postcondiciones:
-    - Devuelve True si dni tiene 7 u 8 dígitos.
-    - Devuelve False en cualquier otro caso (vacío, letras, símbolos, otra longitud, 0 inicial).
-    - No modifica dni, no imprime nada y no solicita datos por teclado.
-    """
-    patron_dni = r"[1-9][0-9]{6,7}"
-    return bool(re.fullmatch(patron_dni, dni))
-
-
-def validar_nombre(nombre: str) -> bool:
-    """
-    Indica si un 'nombre' es válido como nombre o apellido de una persona.
-
-    Contrato:
-    - Comprueba que 'nombre' esté formado por una o más palabras de letras
-      (con tildes, diéresis y ñ), separadas por un único espacio o apóstrofe.
-    - Se usa tanto para el nombre como para el apellido.
-    - Solo contempla letras del alfabeto latino del español; no admite otros alfabetos.
-
-    Precondiciones:
-    - 'nombre' debe ser un string.
-
-    Postcondiciones:
-    - Devuelve True si 'nombre' cumple el formato descrito.
-    - Devuelve False en cualquier otro caso (vacío, números, símbolos, etc.)
-    - No modifica 'nombre', no imprime nada y no solicita datos por teclado.
-    """
-    letras = "A-Za-zÁÉÍÓÚÜÑáéíóúüñ"
-    patron_nombre = rf"[{letras}]+([ '][{letras}]+)*"
-    return bool(re.fullmatch(patron_nombre, nombre))
-
-
-def validar_correo(correo: str) -> bool:
-    """
-    Indica si un 'correo' tiene el formato de una dirección de correo electrónico.
-
-    Contrato:
-    - Comprueba que 'correo' tenga la forma usuario@dominio.extensión, con una extensión de al menos 2 letras.
-    - Valida solo el formato; no verifica que la casilla exista ni cubre todos los casos raros que admite el estándar de correo.
-
-    Precondiciones:
-    - 'correo' debe ser string.
-
-    Postcondiciones:
-    - Devuelve True si 'correo' tiene un usuario, una arroba, un dominio y una
-      extensión de al menos 2 letras.
-    - Devuelve False en cualquier otro caso (vacío, sin arroba, con espacios,
-      sin extensión, con puntos consecutivos en el dominio).
-    - No modifica 'correo', no imprime nada y no solicita datos por teclado.
-    """
-    patron_correo = r"[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+\.)+[A-Za-z]{2,}"
-    return bool(re.fullmatch(patron_correo, correo))
-
-
-def validar_telefono(telefono: str) -> bool:
-    """
-    Indica si un 'telefono' tiene el formato de un teléfono argentino de 10 dígitos.
-
-    Contrato:
-    - Comprueba que 'telefono' sea el código de área (sin 0 inicial) seguido
-      del número (sin 15), todo junto: 10 dígitos en total.
-    - No contempla números extranjeros ni prefijos internacionales (+54), y
-      no admite espacios ni guiones.
-
-    Precondiciones:
-    - 'telefono' debe ser un string.
-
-    Postcondiciones:
-    - Devuelve True si 'telefono' son 10 dígitos (0-9) y el primero no es 0.
-    - Devuelve False en cualquier otro caso (vacío, letras, guiones, otra
-      longitud, 0 inicial).
-    - No se modifica 'telefono'.
-    """
-    patron_telefono = r"[1-9][0-9]{9}"
-    return bool(re.fullmatch(patron_telefono, telefono))
 
 
 def modificar_paciente(pacientes: dict[str, dict]) -> bool:
@@ -300,7 +191,7 @@ def opciones_modificar_paciente() -> None:
     print()
 
 
-def eliminar_paciente(pacientes: dict[str, dict]) -> bool:
+def eliminar_paciente(pacientes: dict[str, dict], turnos: dict[str, list[str]]) -> bool:
     """
     Elimina a un paciente del sistema, siempre que no tenga turnos asignados.
 
@@ -321,7 +212,7 @@ def eliminar_paciente(pacientes: dict[str, dict]) -> bool:
       modifica y se informa el motivo y devuelve False.
     - turnos nunca se modifica.
     """
-    """
+
     dni = pedir_dato_valido(
         "Ingrese el DNI del paciente: ",
         validar_dni,
@@ -339,8 +230,27 @@ def eliminar_paciente(pacientes: dict[str, dict]) -> bool:
     del pacientes[dni]
     print(f"Paciente {paciente['nombre']} {paciente['apellido']} eliminado.")
     return True
+
+
+def paciente_tiene_turnos(turnos: dict[str, list[str]], dni: str) -> bool:
     """
-    print("falta terminar")
+    Indica si un paciente tiene al menos un turno asignado.
+
+    Contrato:
+    - Recorre los turnos y comprueba si alguno pertenece al DNI recibido.
+
+    Precondiciones:
+    - 'turnos' es un diccionario {id: [dni, fecha, hora]} (puede estar vacío).
+    - dni es un str.
+
+    Postcondiciones:
+    - Devuelve True si algún turno tiene ese DNI; False en caso contrario.
+    - No modifica turnos.
+    """
+    for datos in turnos.values():
+        if datos[0] == dni:
+            return True
+    return False
 
 
 def consultar_paciente(pacientes: dict[str, dict]) -> None:
@@ -352,7 +262,7 @@ def consultar_paciente(pacientes: dict[str, dict]) -> None:
       en una tabla.
 
     Precondiciones:
-    - pacientes es un diccionario (puede estar vacío) con la estructura
+    - 'pacientes' es un diccionario con la estructura
       acordada.
 
     Postcondiciones:
@@ -417,7 +327,7 @@ def listar_pacientes(pacientes: dict[str, dict]) -> None:
     - Muestra una tabla con todos los pacientes registrados.
 
     Precondiciones:
-    - pacientes es un diccionario (puede estar vacío) con la estructura
+    - 'pacientes' es un diccionario con la estructura
       acordada.
 
     Postcondiciones:
@@ -433,7 +343,7 @@ def listar_pacientes(pacientes: dict[str, dict]) -> None:
     mostrar_pacientes(pacientes)
 
 
-def gestionar_pacientes(pacientes: dict[str, dict], archivo: str) -> None:
+def gestionar_pacientes(pacientes: dict[str, dict], turnos, archivo: str) -> None:
     """
     Muestra el menú de pacientes y deriva cada opción a su función.
 
@@ -469,15 +379,21 @@ def gestionar_pacientes(pacientes: dict[str, dict], archivo: str) -> None:
             case "1":
                 if registrar_paciente(pacientes):
                     guardar_datos(archivo, pacientes)
+                    print()
             case "2":
                 if modificar_paciente(pacientes):
                     guardar_datos(archivo, pacientes)
+                    print()
             case "3":
-                if eliminar_paciente(pacientes):
+                if eliminar_paciente(pacientes, turnos):
                     guardar_datos(archivo, pacientes)
+                    print()
             case "4":
                 consultar_paciente(pacientes)
+                print()
             case "5":
                 listar_pacientes(pacientes)
+                print() 
             case _:
                 print("Opción no válida")
+                print() 

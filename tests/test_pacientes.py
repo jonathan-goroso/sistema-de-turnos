@@ -1,4 +1,4 @@
-from gestion_pacientes import (
+from validaciones import (
     validar_dni,
     validar_nombre,
     validar_correo,
