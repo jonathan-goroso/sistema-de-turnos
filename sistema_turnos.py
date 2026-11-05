@@ -23,7 +23,7 @@ def mostrar_menu_principal() -> None:
     - No solicita datos por teclado, no retorna ningún valor y no modifica
       el estado del sistema.
     """
-    print("-----menú principal-----") 
+    print("---- Menú principal ----") 
     opciones = {
         "1": "Gestionar pacientes",
         "2": "Gestionar turnos",

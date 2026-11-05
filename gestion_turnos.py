@@ -7,8 +7,8 @@ from validaciones import (
     generar_id_turno,
     horario_ocupado,
     pedir_confirmacion,
-    pedir_dato_valido,
-    validar_dni,
+    mostrar_turnos,
+    ordenar_turnos
 )
 
 
@@ -135,8 +135,6 @@ def modificar_turno(
             hora = pedir_horario(horarios, "Ingrese el nuevo horario: ")
             if hora is None:
                 return False
-            if hora is None:
-                return False
             
             fecha_actual = turnos[id_turno][1]
             if horario_ocupado(turnos, fecha_actual, hora, id_turno):
@@ -173,7 +171,6 @@ def eliminar_turno(turnos: dict[str, list[str]]) -> bool:
     del turnos[id_turno]
     print("Turno cancelado con éxito.")
     return True
-    return True
 
 
 def consultar_turno(turnos: dict[str, list[str]], pacientes: dict[str, dict]) -> None:
@@ -193,8 +190,6 @@ def consultar_turno(turnos: dict[str, list[str]], pacientes: dict[str, dict]) ->
     if id_turno is None: 
         return 
     
-    datos = turnos[id_turno]
-
     print("--- Datos del turno ---")
     mostrar_turnos({id_turno: turnos[id_turno]}, pacientes)
 

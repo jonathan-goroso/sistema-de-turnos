@@ -15,16 +15,21 @@ def pedir_horario(horarios: list[str], mensaje: str) -> str | None:
     for hora in horarios:
         print(hora)
     
-    hora = input(mensaje).strip()
-    if hora not in horarios:
+    while True:
+        hora = input(mensaje).strip()
+        if hora == "0":
+            return None
+        if hora in horarios:
+            return hora
+        
         print("El horario seleccionado no es válido.")
 
 
-def pedir_fecha() -> str:
+def pedir_fecha(permitir_pasadas: bool = True) -> str:
     """
     Solicita una fecha valida con formato DD/MM/AAAA.
     
-    Pre: None
+    Pre: permitir_pasados indica si se aceptan fechas anteriores a hoy.
     Post: Devuelve una fecha existente en el calendario, en forma de string. Agrega 0
     a la izquierda en caso de tener 1 solo digito, para asi quedar todas con el mismo formato.
     """
@@ -33,10 +38,15 @@ def pedir_fecha() -> str:
 
         try:
             fecha_valida = datetime.strptime(fecha, "%d/%m/%Y")
-            return fecha_valida.strftime("%d/%m/%Y")
-        
         except ValueError:
             print("Fecha inválida. Intente nuevamente.")
+            continue
+        
+        if not permitir_pasadas and fecha_valida.date() < datetime.today():           
+            print("La fecha no puede ser anterior a hoy.")
+            continue
+        
+        return fecha_valida.strftime("%d/%m/%Y")
             
             
 def pedir_dni_existente(pacientes: dict[str, dict]) -> str | None:
@@ -127,3 +137,169 @@ def pedir_confirmacion(mensaje: str) -> bool:
         if respuesta == "n":
             return False
         print("Respuesta inválida. Ingrese S o N.")
+
+
+def pedir_dato_valido(mensaje: str, funcion_validadora, mensaje_error: str) -> str:
+    """
+    Solicita un dato por teclado hasta que el usuario ingrese uno válido.
+
+    Contrato:
+    - Muestra mensaje, lee lo que escribe el usuario y normaliza los espacios:
+      quita los de los extremos y reduce los repetidos a uno solo.
+    - Si el dato normalizado no cumple funcion_validadora, muestra
+      mensaje_error y vuelve a pedirlo.
+    - No tiene forma de cancelar: sigue pidiendo hasta recibir un dato válido.
+
+    Precondiciones:
+    - mensaje y mensaje_error son str.
+    - funcion_validadora es una función que recibe un str y devuelve un bool
+      por ejemplo ("12345678", validar_dni).
+
+    Postcondiciones:
+    - Devuelve un str que cumple funcion_validadora, con los espacios
+      normalizados.
+    - Imprime mensaje_error una vez por cada intento inválido.
+    """
+    while True:
+        dato = " ".join(input(mensaje).split())
+        if funcion_validadora(dato):
+            return dato
+        print(mensaje_error)
+
+
+def validar_dni(dni: str) -> bool:
+    """
+    Indica si 'dni' tiene el formato de un DNI argentino.
+
+    Contrato:
+    - Comprueba que 'dni' esté formado únicamente por 7 u 8 dígitos, y que el primer dígito no sea un 0.
+    - Valida solo el formato; no verifica que el DNI exista realmente ni contempla documentos antiguos con letra (F/M)
+
+    Precondiciones:
+    - 'dni' debe ser un string.
+
+    Postcondiciones:
+    - Devuelve True si dni tiene 7 u 8 dígitos.
+    - Devuelve False en cualquier otro caso (vacío, letras, símbolos, otra longitud, 0 inicial).
+    - No modifica dni, no imprime nada y no solicita datos por teclado.
+    """
+    patron_dni = r"[1-9][0-9]{6,7}"
+    return bool(re.fullmatch(patron_dni, dni))
+
+
+def validar_nombre(nombre: str) -> bool:
+    """
+    Indica si un 'nombre' es válido como nombre o apellido de una persona.
+
+    Contrato:
+    - Comprueba que 'nombre' esté formado por una o más palabras de letras
+      (con tildes, diéresis y ñ), separadas por un único espacio o apóstrofe.
+    - Se usa tanto para el nombre como para el apellido.
+    - Solo contempla letras del alfabeto latino del español; no admite otros alfabetos.
+
+    Precondiciones:
+    - 'nombre' debe ser un string.
+
+    Postcondiciones:
+    - Devuelve True si 'nombre' cumple el formato descrito.
+    - Devuelve False en cualquier otro caso (vacío, números, símbolos, etc.)
+    - No modifica 'nombre', no imprime nada y no solicita datos por teclado.
+    """
+    letras = "A-Za-zÁÉÍÓÚÜÑáéíóúüñ"
+    patron_nombre = rf"[{letras}]+([ '][{letras}]+)*"
+    return bool(re.fullmatch(patron_nombre, nombre))
+
+
+def validar_correo(correo: str) -> bool:
+    """
+    Indica si un 'correo' tiene el formato de una dirección de correo electrónico.
+
+    Contrato:
+    - Comprueba que 'correo' tenga la forma usuario@dominio.extensión, con una extensión de al menos 2 letras.
+    - Valida solo el formato; no verifica que la casilla exista ni cubre todos los casos raros que admite el estándar de correo.
+
+    Precondiciones:
+    - 'correo' debe ser string.
+
+    Postcondiciones:
+    - Devuelve True si 'correo' tiene un usuario, una arroba, un dominio y una
+      extensión de al menos 2 letras.
+    - Devuelve False en cualquier otro caso (vacío, sin arroba, con espacios,
+      sin extensión, con puntos consecutivos en el dominio).
+    - No modifica 'correo', no imprime nada y no solicita datos por teclado.
+    """
+    patron_correo = r"[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+\.)+[A-Za-z]{2,}"
+    return bool(re.fullmatch(patron_correo, correo))
+
+
+def validar_telefono(telefono: str) -> bool:
+    """
+    Indica si un 'telefono' tiene el formato de un teléfono argentino de 10 dígitos.
+
+    Contrato:
+    - Comprueba que 'telefono' sea el código de área (sin 0 inicial) seguido
+      del número (sin 15), todo junto: 10 dígitos en total.
+    - No contempla números extranjeros ni prefijos internacionales (+54), y
+      no admite espacios ni guiones.
+
+    Precondiciones:
+    - 'telefono' debe ser un string.
+
+    Postcondiciones:
+    - Devuelve True si 'telefono' son 10 dígitos (0-9) y el primero no es 0.
+    - Devuelve False en cualquier otro caso (vacío, letras, guiones, otra
+      longitud, 0 inicial).
+    - No se modifica 'telefono'.
+    """
+    patron_telefono = r"[1-9][0-9]{9}"
+    return bool(re.fullmatch(patron_telefono, telefono))
+        
+def mostrar_turnos(turnos: dict[str, list[str]], pacientes: dict[str, dict]) -> None:
+    """
+    Muestra por pantalla una tabla con los datos de los turnos recibidos.
+
+    Arma una fila por turno con ID, DNI, nombre, fecah y horario
+    y la imprime como tabla con encabezados.
+
+    Pre: "turnos" es un diccionario con al menos un turno.
+
+    Post: Se imprime la tabla con todos los turnos.
+    """
+    filas = []
+    
+    for id_turno, datos in turnos.items():
+        dni = datos[0]
+        
+        if dni in pacientes:
+            paciente = f"{pacientes[dni]['nombre']} {pacientes[dni]['apellido']}"
+
+        filas.append([id_turno, dni, paciente, datos[1], datos[2]])
+    encabezados = ["ID", "DNI", "Nombre y Apellido", "Fecha", "Horario"]
+    print(
+        tabulate(
+            filas, headers=encabezados, tablefmt="simple_grid", disable_numparse=True
+        )
+    )
+    
+def ordenar_turnos(turnos: dict[str, list[str]]) -> dict[str, list[str]]:
+    """
+    Ordena los turnos por fecha y hora, del más próximo al más lejano.
+
+    Pre: "turnos" es un diccionario {id: [dni, fecha, hora]}, con fecha
+    DD/MM/AAAA y hora H:MM.
+    Post: Devuelve un diccionario nuevo con los mismos turnos ordenados.
+    No modifica "turnos".
+    """
+    lista = []
+    for id_turno, datos in turnos.items():
+        dia, mes, anio = datos[1].split("/")
+        hora, minutos = datos[2].split(":")
+        clave = (int(anio), int(mes), int(dia), int(hora), int(minutos))
+        lista.append((clave, id_turno))
+
+    lista.sort()
+
+    ordenados = {}
+    for clave, id_turno in lista:
+        ordenados[id_turno] = turnos[id_turno]
+    return ordenados
