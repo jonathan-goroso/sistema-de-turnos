@@ -28,7 +28,7 @@ def mostrar_menu_pacientes() -> None:
         "0": "Volver al menú principal",
     }
     for clave, valor in ops.items():
-        print(f"{clave}-{valor}")
+        print(f"{clave}- {valor}")
     print()
 
 
@@ -458,7 +458,7 @@ def gestionar_pacientes(pacientes: dict[str, dict], archivo: str) -> None:
       válida" y vuelve a mostrar el menú sin modificar pacientes.
     """
     while True:
-        print("---------menú pacientes---------")
+        print("-------- Menú pacientes --------")
         mostrar_menu_pacientes()
 
         opcion = input("Elija una opción: ")

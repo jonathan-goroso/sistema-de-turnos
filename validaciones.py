@@ -1,6 +1,7 @@
 #validaciones y auxiliares
 from gestion_pacientes import pedir_dato_valido, validar_dni
 from datetime import datetime
+from tabulate import tabulate
 
 def pedir_horario(horarios: list[str], mensaje: str) -> str | None:
     """
@@ -14,17 +15,21 @@ def pedir_horario(horarios: list[str], mensaje: str) -> str | None:
     for hora in horarios:
         print(hora)
     
-    hora = input(mensaje).strip()
-    if hora not in horarios:
+    while True:
+        hora = input(mensaje).strip()
+        if hora == "0":
+            return None
+        if hora in horarios:
+            return hora
+        
         print("El horario seleccionado no es válido.")
-        return None
-    return hora
 
-def pedir_fecha() -> str:
+
+def pedir_fecha(permitir_pasadas: bool = True) -> str:
     """
     Solicita una fecha valida con formato DD/MM/AAAA.
     
-    Pre: None
+    Pre: permitir_pasados indica si se aceptan fechas anteriores a hoy.
     Post: Devuelve una fecha existente en el calendario, en forma de string. Agrega 0
     a la izquierda en caso de tener 1 solo digito, para asi quedar todas con el mismo formato.
     """
@@ -33,10 +38,15 @@ def pedir_fecha() -> str:
         
         try:
             fecha_valida = datetime.strptime(fecha, "%d/%m/%Y")
-            return fecha_valida.strftime("%d/%m/%Y")
-        
         except ValueError:
             print("Fecha inválida. Intente nuevamente.")
+            continue
+        
+        if not permitir_pasadas and fecha_valida.date() < datetime.today():
+            print("La fecha no puede ser anterior a hoy.")
+            continue
+        
+        return fecha_valida.strftime("%d/%m/%Y")
             
             
 def pedir_dni_existente(pacientes: dict[str, dict]) -> str | None:
@@ -118,3 +128,53 @@ def pedir_confirmacion(mensaje: str) -> bool:
         if respuesta == "n":
             return False
         print("Respuesta inválida. Ingrese S o N.")
+        
+def mostrar_turnos(turnos: dict[str, list[str]], pacientes: dict[str, dict]) -> None:
+    """
+    Muestra por pantalla una tabla con los datos de los turnos recibidos.
+
+    Arma una fila por turno con ID, DNI, nombre, fecah y horario
+    y la imprime como tabla con encabezados.
+
+    Pre: "turnos" es un diccionario con al menos un turno.
+
+    Post: Se imprime la tabla con todos los turnos.
+    """
+    filas = []
+    
+    for id_turno, datos in turnos.items():
+        dni = datos[0]
+        
+        if dni in pacientes:
+            paciente = f"{pacientes[dni]['nombre']} {pacientes[dni]['apellido']}"
+
+        filas.append([id_turno, dni, paciente, datos[1], datos[2]])
+    encabezados = ["ID", "DNI", "Nombre y Apellido", "Fecha", "Horario"]
+    print(
+        tabulate(
+            filas, headers=encabezados, tablefmt="simple_grid", disable_numparse=True
+        )
+    )
+    
+def ordenar_turnos(turnos: dict[str, list[str]]) -> dict[str, list[str]]:
+    """
+    Ordena los turnos por fecha y hora, del más próximo al más lejano.
+
+    Pre: "turnos" es un diccionario {id: [dni, fecha, hora]}, con fecha
+    DD/MM/AAAA y hora H:MM.
+    Post: Devuelve un diccionario nuevo con los mismos turnos ordenados.
+    No modifica "turnos".
+    """
+    lista = []
+    for id_turno, datos in turnos.items():
+        dia, mes, anio = datos[1].split("/")
+        hora, minutos = datos[2].split(":")
+        clave = (int(anio), int(mes), int(dia), int(hora), int(minutos))
+        lista.append((clave, id_turno))
+
+    lista.sort()
+
+    ordenados = {}
+    for clave, id_turno in lista:
+        ordenados[id_turno] = turnos[id_turno]
+    return ordenados

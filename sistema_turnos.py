@@ -31,7 +31,7 @@ def mostrar_menu_principal() -> None:
         "0": "Salir del programa",
     }
     for clave, valor in opciones.items():
-        print(f"{clave}-{valor}")
+        print(f"{clave}- {valor}")
     print()
 
 
@@ -104,7 +104,7 @@ def main() -> None:
     # ejemplo de como seria: turnos ={id:[dni,fecha,"hora"]}
 
     while True:
-        print("-----menu principal-----")
+        print("---- Menú principal ----")
         mostrar_menu_principal()
         opcion = input("Elija una opción: ")
 
@@ -122,7 +122,7 @@ def main() -> None:
             case "0":
                 break
             case _:
-                print("opción no válida")
+                print("Opción no válida.")
 
 
 if __name__ == "__main__":
