@@ -19,6 +19,7 @@ def menu_turnos() -> None:
     Pre: None
     Post: Imprime las opciones en pantalla.
     """
+    print()
     print("---------Menú de turnos---------") 
     opciones = {
         "1": "Registrar turno",
@@ -28,10 +29,10 @@ def menu_turnos() -> None:
         "5": "Listar turnos",
         "6": "Consultar turnos de un paciente",
         "7": "Consultar disponibilidad de los turnos de un día",
-        "0": "volver al menú principal"
+        "0": "Volver al menú principal"
     }
     for clave, valor in opciones.items():
-        print(f"{clave}-{valor}")
+        print(f"{clave}- {valor}")
     print()
 
 
@@ -285,6 +286,7 @@ def gestionar_turnos(
 
         menu_turnos()
         opcion = input("Elija una opción: ")
+        print()
 
         match opcion:
             case "1":

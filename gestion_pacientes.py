@@ -25,7 +25,6 @@ def mostrar_menu_pacientes() -> None:
     - No solicita datos por teclado, no retorna ningún valor y no modifica
       el estado del sistema.
     """
-    print("---------menú pacientes---------") 
     ops = {
         "1": "Registrar paciente",
         "2": "Modificar paciente",
@@ -368,10 +367,12 @@ def gestionar_pacientes(pacientes: dict[str, dict], turnos, archivo: str) -> Non
       válida" y vuelve a mostrar el menú sin modificar pacientes.
     """
     while True:
+        print()
         print("-------- Menú pacientes --------")
         mostrar_menu_pacientes()
 
         opcion = input("Elija una opción: ")
+        print()
 
         match opcion:
             case "0":

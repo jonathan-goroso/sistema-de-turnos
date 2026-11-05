@@ -42,7 +42,7 @@ def pedir_fecha(permitir_pasadas: bool = True) -> str:
             print("Fecha inválida. Intente nuevamente.")
             continue
         
-        if not permitir_pasadas and fecha_valida.date() < datetime.today():           
+        if not permitir_pasadas and fecha_valida.date() < datetime.today().date():           
             print("La fecha no puede ser anterior a hoy.")
             continue
         
