@@ -15,7 +15,7 @@ El programa funciona mediante un menú interactivo en la terminal y utiliza arch
 - Modificar la información de un paciente registrado.
 - Consultar los datos de un paciente mediante su DNI.
 - Listar todos los pacientes registrados en formato de tabla.
-- Dar de baja a pacientes (funcionalidad pendiente de completar).
+- Dar de baja a pacientes
 
 ### Gestión de turnos
 
@@ -39,7 +39,7 @@ El programa funciona mediante un menú interactivo en la terminal y utiliza arch
 
 ## Tecnologías utilizadas
 
-- **Python:** lenguaje de programación principal.
+- **Python version 3.13.15:** lenguaje de programación principal.
 - **JSON:** almacenamiento de pacientes y turnos.
 - **tabulate:** presentación de los datos de pacientes en tablas.
 - **pytest:** ejecución de pruebas automatizadas.
@@ -81,6 +81,7 @@ Los archivos JSON se crean cuando se guardan datos por primera vez. No es necesa
 | `persistencia.py` | Permite leer y guardar información en archivos JSON. |
 | `test_pacientes.py` | Contiene pruebas de validación de datos de pacientes y lectura de archivos. |
 | `test_turnos.py` | Archivo destinado a las pruebas del módulo de turnos. |
+| `validaciones.py`| Centraliza las validaciones de datos (DNI,fechas,horarios) y entradas por teclado. |
 | `.gitignore` | Indica los archivos y carpetas que Git debe ignorar. |
 
 
