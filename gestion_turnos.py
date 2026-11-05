@@ -1,8 +1,7 @@
-from datetime import datetime
 
 from gestion_pacientes import pedir_dato_valido, validar_dni
 from persistencia import guardar_datos
-
+from validaciones import pedir_horario, pedir_fecha, pedir_dni_existente, pedir_turno_existente, generar_id_turno, horario_ocupado, pedir_confirmacion
 
 def menu_turnos() -> None:
     """
@@ -21,58 +20,6 @@ def menu_turnos() -> None:
     print("7- Consultar disponibilidad de los turnos de un dia")
     print("0- Volver al menu principal\n")
     
-def generar_id_turno(turnos: dict[str, list[str]]) -> str: 
-    """
-    Genera el primer ID de turno, de 4 digitos(0001 a 9999).
-    Recorre del 1 al 9999 y devuelve el primero, con ceros a la izquierda.
-    
-    Pre: Recibe como parametro un diccionario. Su clave son los IDs.
-    Post: Devuelve un str de 4 dígitos, verificando que no esta en "turnos". 
-    """
-    
-    
-    for numero in range(1, 10000):
-        id_turno = str(numero).zfill(4)
-        
-        if id_turno not in turnos:
-            return id_turno
-        
-    return None
-            
-    
-def pedir_fecha() -> str:
-    """
-    Solicita una fecha valida con formato DD/MM/AAAA.
-    
-    Pre: None
-    Post: Devuelve una fecha existente en el calendario, en forma de string. Agrega 0
-    a la izquierda en caso de tener 1 solo digito, para asi quedar todas con el mismo formato.
-    """
-    while True:
-        fecha = input("Ingrese la fecha (DD/MM/AAAA): ").strip()
-        
-        try:
-            fecha_valida = datetime.strptime(fecha, "%d/%m/%Y")
-            return fecha_valida.strftime("%d/%m/%Y")
-        
-        except ValueError:
-            print("Fecha inválida. Intente nuevamente.")
-            
-def horario_ocupado(turnos: dict[str, list[str]], fecha: str, hora: str, id_excluido: str = "") -> bool:
-    """
-    Indica si un horario esta ocupado en una fecha correspondiente.
-    
-    Pre:
-    
-    Post: Retorna un booleano. False si esta libre, True si no.
-    """
-    for id_turno, datos in turnos.items():
-        if id_turno != id_excluido:
-            if datos[1] == fecha and datos[2] == hora:
-                return True
-    
-    return False
-
 def registrar_turno(
     turnos: dict[str, list[str]],
     pacientes: dict[str, dict],
@@ -106,10 +53,7 @@ def registrar_turno(
     for hora in horarios:
         print(hora)
         
-    hora = input("Ingrese el horario del turno: ")
-    if hora not in horarios:
-        print("El horario seleccionado no es valido.")
-        return False
+    hora = pedir_horario(horarios, "Ingrese el horario del turno: ")
     
     if horario_ocupado(turnos, fecha, hora):
         print("El horario ya esta ocupado para esa fecha.")
@@ -146,9 +90,8 @@ def modificar_turno(
         print("No hay turnos registrados.")
         return False
 
-    id_turno = input("Ingrese el ID del turno a modificar: ")
-    if id_turno not in turnos:
-        print("No existe un turno con el ID ingresado")
+    id_turno = pedir_turno_existente(turnos,"Ingrese el ID del turno a modificar.")
+    if id_turno is None:
         return False
     
     print("--- Dato a modificar ---")
@@ -160,10 +103,8 @@ def modificar_turno(
     
     match opcion:
         case "1":
-            dni = input("Ingrese el DNI del nuevo paciente: ")
-            
-            if dni not in pacientes:
-                print("No existe un paciente registrado con ese DNI.")
+            dni = pedir_dni_existente(pacientes)
+            if dni is None:
                 return False
             
             turnos[id_turno][0] = dni
@@ -187,10 +128,7 @@ def modificar_turno(
             for hora in horarios:
                 print(hora)
                 
-            hora = input("Ingrese el nuevo horario: ")
-            if hora not in horarios:
-                print("El horario seleccionado no es válido.")
-                return False
+            hora = pedir_horario(horarios, "Ingrese el nuevo horario: ")
             
             fecha_actual = turnos[id_turno][1]
             if horario_ocupado(turnos, fecha_actual, hora, id_turno):
@@ -216,10 +154,13 @@ def eliminar_turno(turnos: dict[str, list[str]]) -> None:
         print("No hay turnos registrados.")
         return
     
-    id_turno = input("Ingrese el ID del turno a cancelar: ")
-    if id_turno not in turnos:
-        print("No existe un turno con ese ID.")
-        return
+    id_turno = pedir_turno_existente(turnos, "Ingrese el ID del turno a cancelar: ")
+    if id_turno is None:
+        return False
+    
+    if not pedir_confirmacion("Está seguro que desea cancelar el turno: "):
+        print("Cancelación cancelada.")
+        return False
     
     del turnos[id_turno]
     print("Turno cancelado con éxito.")
@@ -238,21 +179,16 @@ def consultar_turno(turnos: dict[str, list[str]]) -> None:
         print("No hay turnos registrados.")
         return
         
-    id_turno = input("Ingrese el ID del turno a consultar: ")
-    
-    if id_turno not in turnos: 
-        print("No existe un turno con ese ID.")
-        return
+    id_turno = pedir_turno_existente(turnos, "Ingrese el ID del turno a consultar: ")
+    if id_turno is None: 
+        return False
     
     datos = turnos[id_turno]
     
     print("--- Datos del turno ---")
     print(f"ID: {id_turno} | DNI del paciente: {datos[0]} | Fecha: {datos[1]} | Horario: {datos[2]}")
 
-    
-
-
-def listar_turnos(turnos: dict[int:list]) -> None:
+def listar_turnos(turnos: dict[str, list[str]]) -> None:
     """
     Muestra todos los turnos registrados. Con sus datos correspondientes.
 
@@ -268,8 +204,7 @@ def listar_turnos(turnos: dict[int:list]) -> None:
     for id_turno, datos in turnos.items():
         print(f"ID: {id_turno} | DNI del paciente: {datos[0]} | Fecha: {datos[1]} | Horario: {datos[2]}\n")
         
-
-def turnos_paciente(turnos: dict[int:list], pacientes: dict[str, dict]) -> None:
+def turnos_paciente(turnos: dict[str, list[str]], pacientes: dict[str, dict]) -> None:
     """
     Solicita el DNI de un paciente, y si existe muestra sus turnos.
 
@@ -298,7 +233,7 @@ def turnos_paciente(turnos: dict[int:list], pacientes: dict[str, dict]) -> None:
     if encontrados == 0: 
         print("El paciente no tiene turnos registrados.")
 
-def disponibilidad_turnos(turnos: dict[int:list], horarios: list[str]) -> None:
+def disponibilidad_turnos(turnos: dict[str, list[str]], horarios: list[str]) -> None:
     """
     Muestra el estado de los turnos de un dia seleccionado. 
 
@@ -321,8 +256,6 @@ def disponibilidad_turnos(turnos: dict[int:list], horarios: list[str]) -> None:
             estado = "Libre"
         print(f"{hora} - {estado}")
             
-
-
 def gestionar_turnos(
     turnos: dict[str, list[str]],
     pacientes: dict[str, dict],
@@ -345,7 +278,6 @@ def gestionar_turnos(
     while True:
 
         menu_turnos()
-
         opcion = input("Elija una opción: ")
 
         match opcion:
