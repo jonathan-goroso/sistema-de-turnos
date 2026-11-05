@@ -90,7 +90,11 @@ Los archivos JSON se crean cuando se guardan datos por primera vez. No es necesa
 ## Ejecución del programa
 
 Desde la carpeta principal del proyecto, ejecutar:
+```bash
+pip install -r requirements.txt
+```
 
+Luego
 ```bash
 python sistema_turnos.py
 ```
