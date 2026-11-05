@@ -57,7 +57,8 @@ sistema-de-turnos/
 │
 ├── tests/
 │   ├── test_pacientes.py
-│   └── test_turnos.py
+│   ├── test_turnos.py
+│   └── test_validaciones.py
 │
 ├── .gitignore
 ├── gestion_pacientes.py
